@@ -2,18 +2,17 @@ import argparse
 import socket
 import struct
 import sys
-
+import connection
 ###########################################################
 ####################### YOUR CODE #########################
 ###########################################################
 
 
 def send_data(server_ip, server_port, data: str):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((server_ip, server_port))
-    sz = len(data)
-    sf = struct.Struct(f"<I{sz}s")
-    client.send(sf.pack(sz, data.encode()))
+    with connection.Connection.connect(server_ip, server_port) as client:
+        sz = len(data)
+        sf = struct.Struct(f"<I{sz}s")
+        client.send_message(sf.pack(sz, data.encode()))
 
 
 ###########################################################

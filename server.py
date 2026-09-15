@@ -2,24 +2,20 @@ import argparse
 import socket
 import struct
 import sys
+import threading
+import listener
+import connection
 
 
-def run_server(ip, port):
-    serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serv.bind((ip, port))
-    serv.listen(5)
-    while True:
-        conn, addr = serv.accept()
-        from_client = ""
+def recieve_data(conn: connection.Connection):
+    print(f"Recieved Data: {conn.recieve_message()}")
+
+
+def run_server(host, port):
+    with listener.Listener(host, port) as my_listener:
         while True:
-            sz: int = struct.unpack("<I", conn.recv(4))[0]
-            data = conn.recv(sz)
-            if not data:
-                break
-            from_client += data.decode()
-            print(f"Recieved Data: {from_client}")
-            conn.close()
-            break
+            with my_listener.accept() as conn:
+                threading.Thread(target=recieve_data, args=(conn,)).run()
 
 
 def get_args():
